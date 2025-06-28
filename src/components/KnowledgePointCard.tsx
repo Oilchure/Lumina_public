@@ -106,11 +106,7 @@ const KnowledgePointCard: React.FC<KnowledgePointCardProps> = ({
                 <EditIcon />
               </button>
               <button
-                onClick={() => {
-                  if (window.confirm(`确定要删除知识点 "${knowledgePoint.title}" 吗？`)) {
-                    onDelete(knowledgePoint.id);
-                  }
-                }}
+                onClick={() => onDelete(knowledgePoint.id)} 
                 className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
                 title="删除知识点"
               >

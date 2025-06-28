@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { BookOpenIcon, DocumentTextIcon, ClipboardDocumentCheckIcon, FolderPlusIcon, SquaresFourIcon } from './icons.tsx'; 
+import { BookOpenIcon, DocumentTextIcon, ClipboardDocumentCheckIcon, ArrowDownOnSquareIcon, FolderPlusIcon, SquaresFourIcon } from './icons.tsx'; 
 
 interface NavItem {
   to: string;
@@ -15,8 +15,7 @@ const Navbar: React.FC = () => {
     { to: '/tasks', label: '任务', icon: <ClipboardDocumentCheckIcon className="w-5 h-5 mr-2" /> },
     { to: '/outline', label: '大纲', icon: <FolderPlusIcon className="w-5 h-5 mr-2" /> },
     { to: '/mindmap', label: '思维导图', icon: <SquaresFourIcon className="w-5 h-5 mr-2" /> },
-    // The "Data" link is removed to favor automatic sync. It can be re-added if manual backup/restore is desired as a secondary feature.
-    // { to: '/data', label: '数据', icon: <ArrowDownOnSquareIcon className="w-5 h-5 mr-2" /> },
+    { to: '/data', label: '数据', icon: <ArrowDownOnSquareIcon className="w-5 h-5 mr-2" /> },
   ];
 
   const linkClasses = "flex items-center px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors";
