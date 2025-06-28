@@ -8,7 +8,7 @@ const BLOB_KEY = "main-data";
 
 
 const handler: Handler = async (event: HandlerEvent) => {
-  const store = getDeployStore({ siteID: process.env.SITE_ID, name: STORE_NAME, token: process.env.NETLIFY_API_TOKEN });
+  const store = getDeployStore({ siteID: 0a3af35d-d281-4909-b94c-c4eba048987f, name: lumina-data-store });
 
   const headers = {
     'Access-Control-Allow-Origin': '*', // 允许所有来源的请求
