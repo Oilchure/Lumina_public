@@ -132,7 +132,11 @@ const OutlineManagementPage: React.FC = () => {
                     <EditIcon className="w-4 h-4"/>
                 </button>
                 <button 
-                    onClick={() => deleteCategory(cat.id)} 
+                    onClick={() => {
+                      if (window.confirm(`确定要删除分类 "${cat.name}" 吗？此操作不可撤销。`)) {
+                        deleteCategory(cat.id);
+                      }
+                    }}
                     className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                     title="删除分类"
                     aria-label={`删除分类 ${cat.name}`}

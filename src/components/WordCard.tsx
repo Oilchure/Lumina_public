@@ -108,7 +108,11 @@ const WordCard: React.FC<WordCardProps> = ({
                 <EditIcon />
               </button>
               <button
-                onClick={() => onDelete(word.id)} 
+                onClick={() => {
+                  if (window.confirm(`确定要删除单词 "${word.text}" 吗？`)) {
+                    onDelete(word.id);
+                  }
+                }}
                 className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
                 title="删除单词"
               >

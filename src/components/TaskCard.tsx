@@ -53,7 +53,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
             <EditIcon className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => onDelete(task.id)} 
+            onClick={() => {
+                if (window.confirm(`确定要删除任务 "${task.text}" 吗？`)) {
+                    onDelete(task.id);
+                }
+            }}
             className="p-0.5 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
             title="删除任务"
             aria-label="删除任务"
