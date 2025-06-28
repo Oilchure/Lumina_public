@@ -1,14 +1,26 @@
+
 import type { Handler, HandlerEvent } from "@netlify/functions";
 import { getDeployStore } from "@netlify/blobs";
-import { ExportData, Word, KnowledgePoint, Category, Task } from '../../src/types';
+import { ExportData } from '../../src/types.ts';
 
 // 这是您数据在Netlify Blobs中的名字，可以保持不变
 const STORE_NAME = "lumina-data-store";
 const BLOB_KEY = "main-data";
 
+// 这是您的站点ID，我已经为您填好
+const SITE_ID = '0a3af35d-d281-4909-b94c-c4eba048987f';
+
 
 const handler: Handler = async (event: HandlerEvent) => {
-  const store = getDeployStore({ siteID: 0a3af35d-d281-4909-b94c-c4eba048987f, name: lumina-data-store });
+  // 确保您已经在 Netlify 的环境变量中设置了 NETLIFY_API_TOKEN
+  if (!process.env.NETLIFY_API_TOKEN) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Configuration error: NETLIFY_API_TOKEN environment variable is not set." }),
+    };
+  }
+
+  const store = getDeployStore({ siteID: SITE_ID, name: STORE_NAME, token: process.env.NETLIFY_API_TOKEN });
 
   const headers = {
     'Access-Control-Allow-Origin': '*', // 允许所有来源的请求
@@ -16,7 +28,6 @@ const handler: Handler = async (event: HandlerEvent) => {
     'Access-Control-Allow-Headers': 'Content-Type',
   };
   
-  // 浏览器在发送POST请求前会先发送一个OPTIONS预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,

@@ -51,7 +51,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const dataStateRef = useRef<ExportData | undefined>();
+  const dataStateRef = useRef<ExportData | undefined>(undefined);
   dataStateRef.current = { words, knowledgePoints, categories, tasks };
 
   const saveTimeoutRef = useRef<number | null>(null);
