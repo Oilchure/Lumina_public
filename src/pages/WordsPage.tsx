@@ -12,7 +12,7 @@ import { fetchWordDefinitions } from '../services/dictionaryService.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 
 const WordsPage: React.FC = () => {
-  const { words, addWord, updateWord, deleteWord } = useData();
+  const { words, addWord, updateWord, deleteWord, lastUsedSource, setLastUsedSource } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,6 +121,9 @@ const WordsPage: React.FC = () => {
     }
 
     const now = Date.now();
+    const referenceName = currentReadingRecordSource?.referenceName?.trim();
+    const sourceToSave = referenceName ? { ...currentReadingRecordSource, referenceName } : null;
+
     let wordToSave: Word;
 
     if (editingWord) {
@@ -129,7 +132,7 @@ const WordsPage: React.FC = () => {
         text: currentWordText.trim(),
         definitions: finalDefinitions,
         notes: currentNotes.trim(),
-        readingRecordSource: currentReadingRecordSource?.referenceName ? currentReadingRecordSource : null,
+        readingRecordSource: sourceToSave,
       };
       updateWord(wordToSave);
     } else {
@@ -138,13 +141,18 @@ const WordsPage: React.FC = () => {
         text: currentWordText.trim(),
         definitions: finalDefinitions,
         notes: currentNotes.trim(),
-        readingRecordSource: currentReadingRecordSource?.referenceName ? currentReadingRecordSource : null,
+        readingRecordSource: sourceToSave,
         createdAt: now,
         lastReviewedAt: now,
         reviewStage: EbbinghausStage.LEARNED,
       };
       addWord(wordToSave);
     }
+    
+    if (referenceName) {
+        setLastUsedSource(referenceName);
+    }
+
     handleCloseModal();
   };
 
@@ -228,7 +236,9 @@ const WordsPage: React.FC = () => {
   };
   
   const handleDeleteWordDirect = (wordId: string) => {
-    deleteWord(wordId); 
+    if (window.confirm('确定要删除这个词汇吗？')) {
+        deleteWord(wordId); 
+    }
   };
 
   return (
@@ -392,7 +402,7 @@ const WordsPage: React.FC = () => {
                 </select>
             </div>
             {currentReadingRecordSource?.readingRecordCategoryId && (
-                 <div>
+                 <div className="relative">
                     <label htmlFor="referenceName" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
                         {currentReadingRecordSource.readingRecordCategoryId === READING_RECORD_LITERATURE_ID ? '文献名称' : '具体名称/篇章'}
                     </label>
@@ -402,8 +412,18 @@ const WordsPage: React.FC = () => {
                         value={currentReadingRecordSource.referenceName || ''}
                         onChange={(e) => setCurrentReadingRecordSource(prev => prev ? {...prev, referenceName: e.target.value} : null)}
                         placeholder={currentReadingRecordSource.readingRecordCategoryId === READING_RECORD_LITERATURE_ID ? "例如：Nature 2023, Doe et al." : "例如：具体书名或篇章名"}
-                        className="mt-1 block w-full input-standard"
+                        className="mt-1 block w-full input-standard pr-24"
                     />
+                    {lastUsedSource && (
+                      <button
+                        type="button"
+                        onClick={() => setCurrentReadingRecordSource(prev => prev ? {...prev, referenceName: lastUsedSource} : null)}
+                        className="absolute right-1 top-[22px] text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 rounded px-2 py-1"
+                        title={`使用上次来源: ${lastUsedSource}`}
+                      >
+                        与上次相同
+                      </button>
+                    )}
                 </div>
             )}
           </div>

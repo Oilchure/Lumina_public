@@ -22,7 +22,7 @@ const getTodayDateForTitle = () => {
 };
 
 const KnowledgePage: React.FC = () => {
-  const { knowledgePoints, addKnowledgePoint, updateKnowledgePoint, deleteKnowledgePoint, categories } = useData();
+  const { knowledgePoints, addKnowledgePoint, updateKnowledgePoint, deleteKnowledgePoint, categories, lastUsedSource, setLastUsedSource } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingKp, setEditingKp] = useState<KnowledgePoint | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,6 +96,8 @@ const KnowledgePage: React.FC = () => {
     if (!editingKp && currentCategoryId === DAILY_THOUGHTS_CATEGORY_ID && titleToSave === '') {
         titleToSave = getTodayDateForTitle();
     }
+    
+    const sourceToSave = currentSource.trim() || undefined;
 
     if (editingKp) {
       updateKnowledgePoint({
@@ -104,7 +106,7 @@ const KnowledgePage: React.FC = () => {
         content: currentContent.trim(),
         notes: currentNotes.trim(),
         categoryId: currentCategoryId,
-        source: currentSource.trim() || undefined,
+        source: sourceToSave,
       });
     } else {
       addKnowledgePoint({ 
@@ -112,9 +114,14 @@ const KnowledgePage: React.FC = () => {
         content: currentContent.trim(),
         notes: currentNotes.trim(),
         categoryId: currentCategoryId,
-        source: currentSource.trim() || undefined,
+        source: sourceToSave,
       });
     }
+
+    if(sourceToSave) {
+        setLastUsedSource(sourceToSave);
+    }
+
     handleCloseModal();
   };
   
@@ -254,7 +261,9 @@ const KnowledgePage: React.FC = () => {
   };
 
   const handleDeleteKnowledgePointDirect = (kpId: string) => {
-    deleteKnowledgePoint(kpId); // Direct call from context
+    if(window.confirm(`确定要删除此知识点吗？`)) {
+      deleteKnowledgePoint(kpId);
+    }
   };
 
 
@@ -382,7 +391,7 @@ const KnowledgePage: React.FC = () => {
               className="mt-1 block w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm p-2 dark:bg-slate-700 dark:text-slate-100 resize-none overflow-hidden"
             />
           </div>
-           <div style={{ display: (currentCategoryId === DAILY_THOUGHTS_CATEGORY_ID || !currentCategoryId ) ? 'none' : 'block' }}>
+           <div className="relative" style={{ display: (currentCategoryId === DAILY_THOUGHTS_CATEGORY_ID || !currentCategoryId ) ? 'none' : 'block' }}>
             <label htmlFor="kpSource" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 { isReadingRecordCategory(currentCategoryId) || currentCategoryId === READING_RECORDS_CATEGORY_ID ? '具体名称 (如文献名、书名)' : '来源 (可选)' }
             </label>
@@ -392,8 +401,18 @@ const KnowledgePage: React.FC = () => {
               value={currentSource}
               onChange={(e) => setCurrentSource(e.target.value)}
               placeholder={getSourceInputPlaceholder()}
-              className="mt-1 block w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm p-2 dark:bg-slate-700 dark:text-slate-100"
+              className="mt-1 block w-full border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 sm:text-sm p-2 dark:bg-slate-700 dark:text-slate-100 pr-24"
             />
+            {lastUsedSource && (
+              <button
+                type="button"
+                onClick={() => setCurrentSource(lastUsedSource)}
+                className="absolute right-1 top-[29px] text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 rounded px-2 py-1"
+                title={`使用上次来源: ${lastUsedSource}`}
+              >
+                与上次相同
+              </button>
+            )}
           </div>
           <div>
             <label htmlFor="kpNotes" className="block text-sm font-medium text-slate-700 dark:text-slate-300">备注 (可选)</label>

@@ -31,6 +31,9 @@ interface DataContextType {
   
   importData: (data: ExportData) => void;
   exportData: () => ExportData;
+
+  lastUsedSource: string | null;
+  setLastUsedSource: (source: string | null) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -46,6 +49,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [categories, setCategories] = useLocalStorage<Category[]>('lumina-categories', DEFAULT_CATEGORIES);
   const [tasks, setTasks] = useLocalStorage<Task[]>('lumina-tasks', []);
   const [lastTasksClearDate, setLastTasksClearDate] = useLocalStorage<string>('lumina-last-tasks-clear-date', '');
+  const [lastUsedSource, setLastUsedSource] = useLocalStorage<string | null>('lumina-last-source', null);
 
   useEffect(() => {
     const todayStr = getTodayDateString();
@@ -95,11 +99,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateCategory = (updatedCategory: Category) => setCategories(prev => prev.map(c => c.id === updatedCategory.id ? updatedCategory : c));
   
   const deleteCategory = useCallback((categoryId: string): boolean => {
-    // Removed checks for associated knowledge points or sub-categories.
-    // Removed alert popups.
+    if (knowledgePoints.some(kp => kp.categoryId === categoryId)) {
+      alert('无法删除：仍有知识点属于此分类。请先将这些知识点移至其他分类或设为未分类。');
+      return false;
+    }
+    if (categories.some(c => c.parentId === categoryId)) {
+        alert('无法删除：此分类下仍有子分类。请先删除或移动子分类。');
+        return false;
+    }
     setCategories(prev => prev.filter(c => c.id !== categoryId));
-    return true; 
-  }, [setCategories]); // Removed knowledgePoints and categories from dependencies as they are no longer checked
+    return true;
+  }, [knowledgePoints, categories, setCategories]);
 
   const addTask = (task: Task) => setTasks(prev => [task, ...prev].sort((a,b) => b.createdAt - a.createdAt));
   const updateTask = (updatedTask: Task) => setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t).sort((a,b) => b.createdAt - a.createdAt));
@@ -122,7 +132,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       knowledgePoints, setKnowledgePoints, addKnowledgePoint, updateKnowledgePoint, deleteKnowledgePoint,
       categories, setCategories, addCategory, updateCategory, deleteCategory,
       tasks, setTasks, addTask, updateTask, deleteTask,
-      importData, exportData
+      importData, exportData,
+      lastUsedSource, setLastUsedSource
     }}>
       {children}
     </DataContext.Provider>

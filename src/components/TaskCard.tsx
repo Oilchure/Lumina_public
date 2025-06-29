@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Task, TaskQuadrant } from '../types.ts';
 import { TASK_QUADRANT_LABELS, TASK_QUADRANT_COLORS } from '../constants.ts';

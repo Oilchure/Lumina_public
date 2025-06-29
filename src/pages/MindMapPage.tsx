@@ -1,9 +1,7 @@
-
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext.tsx';
 import { Category, KnowledgePoint, Word } from '../types.ts';
-import { BookOpenIcon, DocumentTextIcon, SquaresFourIcon, FolderPlusIcon, ChevronDownIcon, ChevronRightIcon } from '../components/icons.tsx';
-import { READING_RECORDS_CATEGORY_ID, READING_RECORD_LITERATURE_ID } from '../constants.ts';
+import { BookOpenIcon, DocumentTextIcon, SquaresFourIcon, FolderPlusIcon } from '../components/icons.tsx';
 
 interface MindMapNodeData {
   id: string;
@@ -21,7 +19,6 @@ interface MindMapNodeDisplayProps {
 
 const calculateNodeMargin = (depth: number): string => {
   if (depth === 0) return '0';
-  // Always use networkWeb margin logic
   return `${depth * 1.5}rem`; 
 };
 
@@ -30,7 +27,7 @@ const MindMapNodeDisplay: React.FC<MindMapNodeDisplayProps> = ({ node, isGloball
     node.type === 'knowledgePoint' ? DocumentTextIcon :
     node.type === 'word' ? BookOpenIcon :
     node.type === 'literatureGroup' ? FolderPlusIcon :
-    node.type === 'category' && node.id === READING_RECORDS_CATEGORY_ID ? SquaresFourIcon :
+    node.type === 'category' && node.id === 'cat-reading-log' ? SquaresFourIcon :
     node.type === 'category' ? FolderPlusIcon :
     null;
 
@@ -38,14 +35,13 @@ const MindMapNodeDisplay: React.FC<MindMapNodeDisplayProps> = ({ node, isGloball
 
   const getBaseNodeClasses = (type: MindMapNodeData['type'], depth: number, nodeId: string) => {
     let classes = "flex items-center my-0.5 border-l-4 transition-colors ";
-    // Always use networkWeb styling (pill shape)
-    classes += "px-3 py-1.5 rounded-full text-sm "; // Increased py and text-sm
-    if (nodeId === READING_RECORDS_CATEGORY_ID) classes += 'bg-green-100 dark:bg-green-800 hover:bg-green-200 dark:hover:bg-green-700 border-green-400 dark:border-green-600 font-semibold ';
-    else if (type === 'literatureGroup') classes += 'bg-sky-100 dark:bg-sky-700 hover:bg-sky-200 dark:hover:bg-sky-600 border-sky-400 dark:border-sky-500 ';
-    else if (type === 'category') classes += depth === 1 ? 'bg-indigo-100 dark:bg-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-600 border-indigo-400 dark:border-indigo-500 ' : 'bg-purple-100 dark:bg-purple-600 hover:bg-purple-200 dark:hover:bg-purple-500 border-purple-400 dark:border-purple-500 ';
-    else if (type === 'knowledgePoint') classes += 'bg-teal-50 dark:bg-teal-800 hover:bg-teal-100 dark:hover:bg-teal-700 border-teal-400 dark:border-teal-600 ';
-    else if (type === 'word') classes += 'bg-orange-50 dark:bg-orange-800 hover:bg-orange-100 dark:hover:bg-orange-700 border-orange-400 dark:border-orange-600 ';
-    else classes += 'bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border-slate-400 dark:border-slate-500 ';
+    classes += "px-3 py-1.5 rounded-full text-sm "; 
+    if (type === 'category' && depth === 0) classes += 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 border-slate-400 dark:border-slate-500 font-semibold text-base ';
+    else if (type === 'literatureGroup') classes += 'bg-sky-100 dark:bg-sky-800 hover:bg-sky-200 dark:hover:bg-sky-700 border-sky-400 dark:border-sky-600 ';
+    else if (type === 'category') classes += 'bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 border-indigo-400 dark:border-indigo-600 ';
+    else if (type === 'knowledgePoint') classes += 'bg-teal-50 dark:bg-teal-900/50 hover:bg-teal-100 dark:hover:bg-teal-800/60 border-teal-400 dark:border-teal-700 ';
+    else if (type === 'word') classes += 'bg-orange-50 dark:bg-orange-900/50 hover:bg-orange-100 dark:hover:bg-orange-800/60 border-orange-400 dark:border-orange-700 ';
+    else classes += 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-400 dark:border-slate-600 ';
     return classes;
   };
   
@@ -57,13 +53,12 @@ const MindMapNodeDisplay: React.FC<MindMapNodeDisplayProps> = ({ node, isGloball
         className={getBaseNodeClasses(node.type, node.depth, node.id)}
         style={{ marginLeft: nodeMargin }}
       >
-        {/* Expansion toggle removed - global control now */}
-        {NodeIcon && <NodeIcon className={"w-3.5 h-3.5 mr-2 flex-shrink-0 text-slate-600 dark:text-slate-300"} />} {/* Increased icon size and margin */}
-        <span className={`font-medium text-slate-800 dark:text-slate-100 truncate text-sm`} title={node.name}> {/* Changed to text-sm */}
+        {NodeIcon && <NodeIcon className={"w-4 h-4 mr-2 flex-shrink-0 text-slate-600 dark:text-slate-300"} />}
+        <span className={`font-medium text-slate-800 dark:text-slate-100 truncate`} title={node.name}>
           {node.name}
         </span>
         {node.data && 'createdAt' in node.data && (
-            <span className={`ml-auto pl-2 flex-shrink-0 text-2xs text-slate-500 dark:text-slate-400`}> {/* Increased pl */}
+            <span className={`ml-auto pl-2 flex-shrink-0 text-2xs text-slate-500 dark:text-slate-400`}>
                 {new Date(node.data.createdAt).toLocaleDateString('zh-CN')}
             </span>
         )}
@@ -86,12 +81,9 @@ const MindMapNodeDisplay: React.FC<MindMapNodeDisplayProps> = ({ node, isGloball
 
 const MindMapPage: React.FC = () => {
   const { categories, knowledgePoints, words } = useData();
-  const [isGloballyExpanded, setIsGloballyExpanded] = useState(true); // Default to expanded
+  const [isGloballyExpanded, setIsGloballyExpanded] = useState(true);
 
   const treeData = useMemo(() => {
-    const readingRecordsRootCat = categories.find(c => c.id === READING_RECORDS_CATEGORY_ID);
-    if (!readingRecordsRootCat) return null;
-
     const buildTreeRecursive = (category: Category, currentDepth: number): MindMapNodeData => {
       let children: MindMapNodeData[] = [];
 
@@ -99,95 +91,85 @@ const MindMapPage: React.FC = () => {
         .filter(c => c.parentId === category.id)
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(sc => buildTreeRecursive(sc, currentDepth + 1));
-      children.push(...subCategories);
-      
-      if (category.id === READING_RECORD_LITERATURE_ID) {
-        const literatureMap = new Map<string, { kps: KnowledgePoint[], words: Word[] }>();
-        knowledgePoints.forEach(kp => {
-          if (kp.categoryId === READING_RECORD_LITERATURE_ID && kp.source) {
-            if (!literatureMap.has(kp.source)) literatureMap.set(kp.source, { kps: [], words: [] });
-            literatureMap.get(kp.source)!.kps.push(kp);
-          }
-        });
-        words.forEach(word => {
-          if (word.readingRecordSource?.readingRecordCategoryId === READING_RECORD_LITERATURE_ID && word.readingRecordSource.referenceName) {
-            const litName = word.readingRecordSource.referenceName;
-            if (!literatureMap.has(litName)) literatureMap.set(litName, { kps: [], words: [] });
-            literatureMap.get(litName)!.words.push(word);
-          }
-        });
-        
-        const literatureGroupNodes: MindMapNodeData[] = Array.from(literatureMap.entries())
-          .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
-          .map(([literatureName, items]) => {
-            const litKps = items.kps.sort((a,b)=>a.title.localeCompare(b.title)).map(kp => ({
-              id: `kp-${kp.id}`, name: kp.title, type: 'knowledgePoint'as 'knowledgePoint', data: kp, depth: currentDepth + 2,
-            }));
-            const litWords = items.words.sort((a,b)=>a.text.localeCompare(b.text)).map(word => ({
-              id: `word-${word.id}`, name: word.text, type: 'word'as 'word', data: word, depth: currentDepth + 2,
-            }));
-            return {
-              id: `litgroup-${category.id}-${literatureName.replace(/\s+/g, '-')}`,
-              name: literatureName,
-              type: 'literatureGroup'as 'literatureGroup',
-              depth: currentDepth + 1,
-              children: [...litKps, ...litWords].sort((a,b) => a.name.localeCompare(b.name)),
-            };
-          });
-        children.push(...literatureGroupNodes);
 
-      } else { 
-        const childKPs = knowledgePoints
-          .filter(kp => kp.categoryId === category.id)
-          .sort((a, b) => a.title.localeCompare(b.title))
-          .map(kp => ({
-            id: `kp-${kp.id}`, name: kp.title, type: 'knowledgePoint'as 'knowledgePoint', data: kp, depth: currentDepth + 1,
-          }));
-        children.push(...childKPs);
+      const itemsWithSourceMap = new Map<string, { kps: KnowledgePoint[], words: Word[] }>();
+      const itemsWithoutSourceKPs: KnowledgePoint[] = [];
+      const itemsWithoutSourceWords: Word[] = [];
 
-        const childWords = words
-          .filter(w => w.readingRecordSource?.readingRecordCategoryId === category.id)
-          .sort((a, b) => a.text.localeCompare(b.text))
-          .map(word => ({
-            id: `word-${word.id}`, name: word.text, type: 'word'as 'word', data: word, depth: currentDepth + 1,
-          }));
-        children.push(...childWords);
-      }
+      knowledgePoints.filter(kp => kp.categoryId === category.id).forEach(kp => {
+        if (kp.source && kp.source.trim()) {
+          const source = kp.source.trim();
+          if (!itemsWithSourceMap.has(source)) itemsWithSourceMap.set(source, { kps: [], words: [] });
+          itemsWithSourceMap.get(source)!.kps.push(kp);
+        } else {
+          itemsWithoutSourceKPs.push(kp);
+        }
+      });
       
-      children.sort((a,b) => {
-          const typeOrder = { category: 0, literatureGroup: 1, knowledgePoint: 2, word: 3 };
-          if (typeOrder[a.type] !== typeOrder[b.type]) {
-              return typeOrder[a.type] - typeOrder[b.type];
-          }
-          return a.name.localeCompare(b.name);
+      words.filter(w => w.readingRecordSource?.readingRecordCategoryId === category.id).forEach(word => {
+        if (word.readingRecordSource.referenceName && word.readingRecordSource.referenceName.trim()) {
+          const source = word.readingRecordSource.referenceName.trim();
+          if (!itemsWithSourceMap.has(source)) itemsWithSourceMap.set(source, { kps: [], words: [] });
+          itemsWithSourceMap.get(source)!.words.push(word);
+        } else {
+          itemsWithoutSourceWords.push(word);
+        }
+      });
+      
+      const literatureGroupNodes: MindMapNodeData[] = Array.from(itemsWithSourceMap.entries())
+        .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
+        .map(([sourceName, items]) => {
+          const litKps = items.kps.map(kp => ({
+            id: `kp-${kp.id}`, name: kp.title, type: 'knowledgePoint' as const, data: kp, depth: currentDepth + 2,
+          }));
+          const litWords = items.words.map(word => ({
+            id: `word-${word.id}`, name: word.text, type: 'word' as const, data: word, depth: currentDepth + 2,
+          }));
+          return {
+            id: `litgroup-${category.id}-${sourceName.replace(/\s+/g, '-')}`,
+            name: sourceName,
+            type: 'literatureGroup' as const,
+            depth: currentDepth + 1,
+            children: [...litKps, ...litWords].sort((a,b) => (a.data?.createdAt || 0) - (b.data?.createdAt || 0)),
+          };
+        });
+
+      const directItemNodes: MindMapNodeData[] = [
+        ...itemsWithoutSourceKPs.map(kp => ({
+            id: `kp-${kp.id}`, name: kp.title, type: 'knowledgePoint' as const, data: kp, depth: currentDepth + 1,
+        })),
+        ...itemsWithoutSourceWords.map(word => ({
+            id: `word-${word.id}`, name: word.text, type: 'word' as const, data: word, depth: currentDepth + 1,
+        }))
+      ];
+      
+      children = [...subCategories, ...literatureGroupNodes, ...directItemNodes];
+
+      children.sort((a, b) => {
+        const typeOrder: Record<string, number> = { category: 0, literatureGroup: 1, knowledgePoint: 2, word: 3 };
+        const aTypeOrder = typeOrder[a.type] ?? 99;
+        const bTypeOrder = typeOrder[b.type] ?? 99;
+        if (aTypeOrder !== bTypeOrder) {
+          return aTypeOrder - bTypeOrder;
+        }
+        if (a.data?.createdAt && b.data?.createdAt) {
+            return a.data.createdAt - b.data.createdAt;
+        }
+        return a.name.localeCompare(b.name);
       });
 
-      return {
-        id: category.id,
-        name: category.name,
-        type: 'category',
-        depth: currentDepth,
-        children: children.length > 0 ? children : undefined,
-      };
+      return { id: category.id, name: category.name, type: 'category', depth: currentDepth, children: children.length > 0 ? children : undefined };
     };
-    
-    return buildTreeRecursive(readingRecordsRootCat, 0);
 
+    return categories
+      .filter(c => c.parentId === null)
+      .sort((a,b) => a.name.localeCompare(b.name))
+      .map(cat => buildTreeRecursive(cat, 0));
   }, [categories, knowledgePoints, words]);
 
   const toggleGlobalExpansion = () => {
     setIsGloballyExpanded(prev => !prev);
   };
-
-  if (!treeData) {
-    return (
-      <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <p className="text-slate-500 dark:text-slate-400">无法加载思维导图：未找到 "阅读记录" 根分类。请在“大纲”页面确保此分类存在。</p>
-      </div>
-    );
-  }
-  
-  const hasContent = treeData.children && treeData.children.length > 0;
   
   return (
     <div className="space-y-6">
@@ -207,21 +189,22 @@ const MindMapPage: React.FC = () => {
       </div>
       
       <div className={`p-2 sm:p-4 bg-white dark:bg-slate-800 rounded-lg shadow min-h-[60vh] overflow-auto custom-scrollbar`}>
-        {!hasContent ? (
-          <p className="text-slate-500 dark:text-slate-400 p-4">阅读记录中尚无内容。请先在词汇或知识点页面添加并关联到阅读记录分类。</p>
+        {treeData.length === 0 ? (
+          <p className="text-slate-500 dark:text-slate-400 p-4">没有可显示的分类。请在“大纲”页面添加分类开始。</p>
         ) : (
           <ul className="mindmap-root-ul list-none p-0">
-            <MindMapNodeDisplay 
-                node={treeData} 
-                isGloballyExpanded={isGloballyExpanded}
-            />
+            {treeData.map(rootNode => (
+              <MindMapNodeDisplay 
+                  key={rootNode.id}
+                  node={rootNode} 
+                  isGloballyExpanded={isGloballyExpanded}
+              />
+            ))}
           </ul>
         )}
       </div>
       <style>{`
-        /* Always use network UL padding */
-        .mindmap-ul.pl-network-ul { padding-left: 2rem; /* pl-8 for network, more base indent for UL */ }
-
+        .mindmap-ul.pl-network-ul { padding-left: 2rem; }
         .mindmap-ul::before, .mindmap-li::before {
           content: "";
           position: absolute;
@@ -231,40 +214,33 @@ const MindMapPage: React.FC = () => {
         .dark .mindmap-ul::before, .dark .mindmap-li::before {
           background-color: #475569; /* slate-600 */
         }
-
-        .mindmap-ul::before { /* Vertical line for UL */
+        .mindmap-ul::before {
           left: 0.25rem; 
-          top: -0.75rem; /* Adjusted for larger py-1.5 node height */
-          bottom: 0.75rem; /* Adjusted for larger py-1.5 node height */
+          top: -0.75rem;
+          bottom: 0.75rem;
           width: 2px;
         }
-        
-        /* Adjust top for network view (pill py-1.5 -> h-~2rem. text-sm line-height ~1.25rem. Center ~1rem)*/
         .pl-network-ul > .mindmap-li::before { 
           top: 1rem; 
           height: 2px;
         }
-
-        /* Width for network view's horizontal connector */
         .pl-network-ul > .mindmap-li::before {
-           width: 1.6rem; /* To connect across most of the 2rem ul padding-left, starting from 0.25rem */
+           width: 1.6rem;
         }
-        
         .mindmap-li > div { 
             position: relative;
-            z-index: 1; /* Ensure node content is above lines */
-            display: inline-flex; /* Helps withpill shape and centering */
-            min-width: 70px; /* Minimum width for nodes, increased slightly */
-            justify-content: flex-start; /* Align content to start for better readability */
+            z-index: 1;
+            display: inline-flex;
+            min-width: 70px;
+            justify-content: flex-start;
             align-items: center;
         }
-
+        .mindmap-root-ul > li > .mindmap-ul::before {
+           display: none;
+        }
         .mindmap-root-ul > .mindmap-li::before, 
         .mindmap-root-ul > .mindmap-li::after {
             display: none; 
-        }
-        .mindmap-root-ul::before {
-            display: none;
         }
         .text-2xs {
           font-size: 0.625rem; /* 10px */
